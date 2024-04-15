@@ -16,13 +16,17 @@ This repository contains a simple Express Node API Gateway that acts as a mediat
 ### Install dependencies:
 ```npm install```
 
-### Update API Keys in Constant.js:
+### Update API Keys in Constant.js or set ENV variable:
 
 ```
 API_KEY: {
         IP_GEO_LOCATION: 'UPDATE-API-KEY',
         IP_STACK: 'UPDATE-API-KEY'
     }
+```
+or
+```
+IPSTACK="Pass API Key" IPGEOLOC="Pass API Key" npm run start
 ```
 
 ## Rate Limitter
