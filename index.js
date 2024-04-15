@@ -1,7 +1,7 @@
 const express = require('express');
-const { HOST, PORT } = require('./constants');
-const { rateLimitter } = require('./rateLimiterMiddleware');
-const router = require('./routes');
+const { HOST, PORT } = require('./src/constants');
+const { rateLimitter } = require('./src/middleware/rateLimiterMiddleware');
+const router = require('./src/routes/routes');
 
 const app = express();
 
