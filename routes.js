@@ -3,7 +3,12 @@ const { rateLimitter } = require('./rateLimiterMiddleware');
 const router = express.Router();
 const { ERROR_CODES, STATUS } = require('./constants');
 
+
 router.get('/countryName', rateLimitter)
+
+router.get('/', (req, res) => {
+    res.send("Add /countryName in the URL to hit the right endpoint");
+});
 
 router.use((req, res) => {
     res.status(ERROR_CODES.NOT_FOUND).json({
