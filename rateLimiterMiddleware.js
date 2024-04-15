@@ -1,6 +1,6 @@
 const IP = require('ip');
 const NodeCache = require( "node-cache" ); 
-const { callVendor2, callVendor1, callCache, getCache } = require('./ipVendors');
+const { callVendor2, callVendor1, callCache, getCache, errorMessage } = require('./ipVendors');
 const { RATE_LIMITTER_CONSTANTS, ERROR_CODES, STATUS } = require('./constants');
 
 const requestCounts = {};
@@ -8,7 +8,10 @@ const tempBlockIPsVendor1 = {};
 const tempBlockIPsVendor2 = {};
 const rateLimitter = (req, res, next) => {
     const ipAddress = req.query.ip;
-    if(getCache(ipAddress)) {
+    if(ipAddress === undefined) {
+        return errorMessage(req, res, next);
+    }
+    if(ipAddress && getCache(ipAddress) !== undefined) {
         return callCache(req, res, next);
     } else {
         const ipAddress = IP.address();
