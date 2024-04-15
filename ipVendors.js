@@ -6,8 +6,14 @@ const serverCache = new NodeCache();
 
 const getCache = (ipAddress) => {
     // Retrieve cache for the given IP address
-    return serverCache.get(ipAddress);
+    serverCache.get(ipAddress) === undefined ? null : serverCache.get(ipAddress);
 };
+
+const errorMessage = (req, res, next) => {
+    res.status(401).json({
+        Message: "IP Address is missing"
+    });
+    }
 
 //ipstack
 const callVendor1 = async (req, res, next) => {
@@ -83,4 +89,4 @@ const callCache = (req, res, next) => {
 }
 
 
-module.exports = {  callVendor1, callVendor2, callCache, getCache };
+module.exports = {  callVendor1, callVendor2, callCache, getCache, errorMessage };
