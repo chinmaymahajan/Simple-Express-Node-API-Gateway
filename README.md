@@ -17,14 +17,16 @@ This repository contains a simple Express Node API Gateway that acts as a mediat
 ```npm install```
 
 ### Update API Keys in Constant.js:
-```API_KEY: {
+
+```
+API_KEY: {
         IP_GEO_LOCATION: 'UPDATE-API-KEY',
         IP_STACK: 'UPDATE-API-KEY'
     }
 ```
 
 ## Rate Limitter
-The rate limiter is configured to limit the number of calls to each vendor. You can configure the limit and reset time in the constants file. Currently, you can make 3 calls to each vendor, and the rate limiter reset time is set to 2 minutes.
+The API server implements rate limiting to restrict the number of requests from a single IP address within a specified time period for each vendor. You can configure the limit and reset time in the constants file. Currently, you can make 3 calls to each vendor, and the rate limiter reset time is set to 2 minutes.
 - For vendor 1: If more than 3 calls are made, the rate limiter for vendor 1 will be triggered, and subsequent requests will be redirected to vendor 2, Vendor 1 will be unavailable for 2 minutes.
 - For vendor 2: Exceeding 3 calls will activate the rate limiter for vendor 2. In this case, there will be a mandatory 2-minute waiting period. 
 
@@ -40,3 +42,7 @@ or
 ## Access Endpoint
 Change the IP accordingly
 ```http://localhost:4500/countryName?ip=36.202.220.155```
+
+## Vendors Used
+- Ipstack
+- IpGeoLocation
