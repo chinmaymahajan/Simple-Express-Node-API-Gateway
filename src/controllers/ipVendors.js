@@ -15,11 +15,14 @@ const errorMessage = (req, res, next) => {
     });
     }
 
+    const ipStackKey = process.env.IPSTACK || API_KEY.IP_STACK;
+    const ipGeoLocKey = process.env.IPGEOLOC || API_KEY.IP_GEO_LOCATION;
+
 //ipstack
 const callVendor1 = async (req, res, next) => {
     const ipAddress = req.query.ip;
     try {
-        const responseFromIpStack = await axios.get(`http://api.ipstack.com/${ipAddress}?access_key=${API_KEY.IP_STACK}`);
+        const responseFromIpStack = await axios.get(`http://api.ipstack.com/${ipAddress}?access_key=${ipStackKey}`);
         if(responseFromIpStack.data.success === false) {
             res.status(401).json({
                 IP:ipAddress,
@@ -56,7 +59,7 @@ const callVendor1 = async (req, res, next) => {
 const callVendor2 = async (req, res, next) => {
     const ipAddress = req.query.ip;
     try {
-        const responseFromIpGeoLocation = await axios.get(`https://api.ipgeolocation.io/ipgeo?apiKey=${API_KEY.IP_GEO_LOCATION}&ip=${ipAddress}`);
+        const responseFromIpGeoLocation = await axios.get(`https://api.ipgeolocation.io/ipgeo?apiKey=${ipGeoLocKey}&ip=${ipAddress}`);
 
         const countryName = responseFromIpGeoLocation.data.country_name;
         // setCache
