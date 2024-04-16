@@ -8,7 +8,7 @@ This repository contains a simple Express Node API Gateway that acts as a mediat
 
 #### Clone the repository:
 
-```git clone https://github.com/your-username/Simple-Express-Node-API-Gateway.git```
+```git clone https://github.com/chinmaymahajan/Simple-Express-Node-API-Gateway.git```
 
 #### Navigate to the project directory:
 ```cd Simple-Express-Node-API-Gateway ```
