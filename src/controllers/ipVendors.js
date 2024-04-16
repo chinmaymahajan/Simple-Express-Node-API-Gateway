@@ -6,7 +6,7 @@ const serverCache = new NodeCache();
 
 const getCache = (ipAddress) => {
     // Retrieve cache for the given IP address
-    serverCache.get(ipAddress) === undefined ? null : serverCache.get(ipAddress);
+   return serverCache.get(ipAddress);
 };
 
 const errorMessage = (req, res, next) => {
