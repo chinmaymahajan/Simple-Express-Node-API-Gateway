@@ -1,88 +1,77 @@
 const IP = require('ip');
-const NodeCache = require( "node-cache" ); 
-const { callVendor2, callVendor1, callCache, getCache, errorMessage } = require('../controllers/ipVendors');
+const { callVendor, callCache, getCache, errorMessage } = require('../controllers/ipVendors');
 const { RATE_LIMITTER_CONSTANTS, ERROR_CODES, STATUS } = require('../constants');
 
 const requestCounts = {};
-const tempBlockIPsVendor1 = {};
-const tempBlockIPsVendor2 = {};
+const tempBlockIPs = {};
+
 const rateLimitter = (req, res, next) => {
     const ipAddress = req.query.ip;
-    if(ipAddress === undefined) {
+    
+    if (ipAddress === undefined) {
         return errorMessage(req, res, next);
     }
-    if(ipAddress && getCache(ipAddress) !== undefined) {
+    
+    if (ipAddress && getCache(ipAddress) !== undefined) {
         return callCache(req, res, next);
     } else {
-        const ipAddress = IP.address();
-        if(requestCounts[ipAddress]  === undefined) {
-            requestCounts[ipAddress] = {}
-            requestCounts[ipAddress].vendor1Count = 0;
-            requestCounts[ipAddress].vendor2Count = 0;
-        }
-
-        if(tempBlockIPsVendor1 && tempBlockIPsVendor1[ipAddress]) {
-            const timeToUnblock = tempBlockIPsVendor1[ipAddress];
-            
-            if(timeToUnblock < Date.now()) {
-                console.log("***** VENDOR 1 is ONLINE *****")
-                delete tempBlockIPsVendor1[ipAddress];
-                requestCounts[ipAddress].vendor1Count = 0;
-                requestCounts[ipAddress].vendor1Count = (requestCounts[ipAddress].vendor1Count || 0) + 1;
-                return callVendor1(req, res, next);
-
-            } else {
-                console.log("???? VENDOR 1 is OFFLINE ????")
-            }
-        }
-        if(tempBlockIPsVendor2 &&  tempBlockIPsVendor2[ipAddress]) {
-            const timeToUnblock = tempBlockIPsVendor2[ipAddress];
-            if(timeToUnblock < Date.now()) {
-                console.log("***** VENDOR 2 is ONLINE *****")
-                delete tempBlockIPsVendor2[ipAddress];
-                requestCounts[ipAddress].vendor2Count = 0;
-                requestCounts[ipAddress].vendor2Count = (requestCounts[ipAddress].vendor2Count || 0) + 1;
-                return callVendor2(req, res, next);
-
-            } else {
-                console.log("???? VENDOR 2 is OFFLINE ????")
-            }
-        }
+        const currentIpAddress = IP.address();
     
-    if(requestCounts[ipAddress] && 
-            (requestCounts[ipAddress].vendor1Count >= RATE_LIMITTER_CONSTANTS.VENDOR1_LIMIT.RATE_LIMIT &&
-            requestCounts[ipAddress].vendor2Count < RATE_LIMITTER_CONSTANTS.VENDOR2_LIMIT.RATE_LIMIT)) {
-            if(tempBlockIPsVendor1[ipAddress] === undefined)
-                tempBlockIPsVendor1[ipAddress] = Date.now() + RATE_LIMITTER_CONSTANTS.VENDOR1_LIMIT.RATE_LIMITER_RESET_TIME
-            requestCounts[ipAddress].vendor2Count = (requestCounts[ipAddress].vendor2Count || 0) + 1;
-                    return callVendor2(req, res, next);
-        } else if(requestCounts[ipAddress] && 
-            (requestCounts[ipAddress].vendor1Count < RATE_LIMITTER_CONSTANTS.VENDOR1_LIMIT.RATE_LIMIT &&
-            requestCounts[ipAddress].vendor2Count >= RATE_LIMITTER_CONSTANTS.VENDOR2_LIMIT.RATE_LIMIT)) {
-                if(tempBlockIPsVendor2[ipAddress] === undefined)
-                    tempBlockIPsVendor2[ipAddress] = Date.now() + RATE_LIMITTER_CONSTANTS.VENDOR2_LIMIT.RATE_LIMITER_RESET_TIME;
-
-            requestCounts[ipAddress].vendor1Count = (requestCounts[ipAddress].vendor1Count || 0) + 1;
-                    return callVendor1(req, res, next);
-        } else if (requestCounts[ipAddress] &&
-            (requestCounts[ipAddress].vendor1Count >= RATE_LIMITTER_CONSTANTS.VENDOR1_LIMIT.RATE_LIMIT &&
-            requestCounts[ipAddress].vendor2Count >= RATE_LIMITTER_CONSTANTS.VENDOR2_LIMIT.RATE_LIMIT)) {
-                const timeToUnblock = tempBlockIPsVendor1[ipAddress];
-                const remainingTimeToUnblock = timeToUnblock - Date.now();
-                const minutes = Math.floor((remainingTimeToUnblock / 1000 / 60) % 60);
-            
-            return res.status(ERROR_CODES.RATE_LIMMIT).json({
-                code: ERROR_CODES.RATE_LIMMIT,
-                status: STATUS.ERROR,
-                message: `Rate limit exceeded for both the Vendors. Please try again later after  ${minutes} minutes`,
-                data: null,
-                });
-        }  else if (requestCounts[ipAddress] &&
-            (requestCounts[ipAddress].vendor1Count < RATE_LIMITTER_CONSTANTS.VENDOR1_LIMIT.RATE_LIMIT &&
-            requestCounts[ipAddress].vendor2Count < RATE_LIMITTER_CONSTANTS.VENDOR2_LIMIT.RATE_LIMIT)){
-            requestCounts[ipAddress].vendor1Count = (requestCounts[ipAddress].vendor1Count || 0) + 1;
-                    return callVendor1(req, res, next)
+        if (!requestCounts[currentIpAddress]) {
+            requestCounts[currentIpAddress] = {};
+            requestCounts[currentIpAddress].vendorCounts = {};
         }
+
+        const vendorCounts = requestCounts[currentIpAddress].vendorCounts;
+
+        for (const vendor of Object.keys(RATE_LIMITTER_CONSTANTS)) {
+            const vendorLimit = RATE_LIMITTER_CONSTANTS[vendor].RATE_LIMIT;
+            const vendorResetTime = RATE_LIMITTER_CONSTANTS[vendor].RATE_LIMITER_RESET_TIME;
+
+            if (vendorCounts[vendor] === undefined) {
+                vendorCounts[vendor] = 0;
+            }
+
+            if (tempBlockIPs[currentIpAddress] && tempBlockIPs[currentIpAddress][vendor]) {
+                const timeToUnblock = tempBlockIPs[currentIpAddress][vendor];
+                
+                if (timeToUnblock < Date.now()) {
+                    console.log(`***** VENDOR ${vendor} is ONLINE *****`);
+                    delete tempBlockIPs[currentIpAddress][vendor];
+                    vendorCounts[vendor] = (vendorCounts[vendor] || 0) + 1
+                    return callVendor(req, res, next, vendor);
+                } else {
+                    console.log(`**** VENDOR ${vendor} is OFFLINE ****`);
+                    continue;
+                }
+            }
+
+            if (vendorCounts[vendor] >= vendorLimit) {
+                if (tempBlockIPs[currentIpAddress] === undefined) {
+                    tempBlockIPs[currentIpAddress] = {};
+                }
+                
+                if (tempBlockIPs[currentIpAddress][vendor] === undefined) {
+                    tempBlockIPs[currentIpAddress][vendor] = Date.now() + vendorResetTime;
+                }
+
+                const remainingTimeToUnblock = tempBlockIPs[currentIpAddress][vendor] - Date.now();
+                const minutes = Math.floor((remainingTimeToUnblock / 1000 / 60) % 60);
+                console.log(`Rate limit exceeded for ${vendor}. Please try again after ${minutes}`)
+                
+            } else {
+                vendorCounts[vendor] = (vendorCounts[vendor] || 0) + 1
+                return callVendor(req, res, next, vendor);
+            }
+        }
+        return res.status(ERROR_CODES.RATE_LIMMIT).json({
+            code: ERROR_CODES.RATE_LIMMIT,
+            status: STATUS.ERROR,
+            message: `Rate limit exceeded for All vendors. Please try again later`,
+            data: null,
+        });
+
     }
 }
+
 module.exports = { rateLimitter, requestCounts }; 
