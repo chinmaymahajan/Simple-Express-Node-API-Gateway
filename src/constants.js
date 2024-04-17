@@ -1,15 +1,18 @@
 
 const CONSTANTS = {
     RATE_LIMITTER_CONSTANTS : {
-        VENDOR1_LIMIT: {
-            RATE_LIMIT: 3,
-            RATE_LIMITER_RESET_TIME:  120 * 1000 // 2 mins
+        vendor1: {
+            RATE_LIMIT: 2,
+            RATE_LIMITER_RESET_TIME: 120 * 1000 // 2 mins
         },
-        VENDOR2_LIMIT: {
-            RATE_LIMIT: 3,
-            RATE_LIMITER_RESET_TIME:  120 * 1000 // 2 mins
+        vendor2: {
+            RATE_LIMIT: 2,
+            RATE_LIMITER_RESET_TIME: 120 * 1000 // 2 mins
+        },
+        vendor3: {
+            RATE_LIMIT: 1,
+            RATE_LIMITER_RESET_TIME: 120 * 1000 // 2 mins
         }
-        
     },
     HOST: 'http://localhost',
     PORT: 4500,
@@ -21,14 +24,15 @@ const CONSTANTS = {
     STATUS: {
         ERROR: "Error"
     },
-    CACHE_TTL: 60, //60 seconds
+    CACHE_TTL: 30, //30 seconds
     API_KEY: {
         IP_GEO_LOCATION: 'UPDATE-API-KEY',
         IP_STACK: 'UPDATE-API-KEY'
     },
     VENDOR: {
         IP_STACK: "Ipstack",
-        IP_GEO_LOCATION: "IpGeoLocation"
+        IP_GEO_LOCATION: "IpGeoLocation",
+        TEST: "TestVendor"
     }
 }
 
