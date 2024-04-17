@@ -5,7 +5,6 @@ const { CACHE_TTL, API_KEY, VENDOR, ERROR_MESSAGE } = require('../constants');
 const serverCache = new NodeCache();
 
 const getCache = (ipAddress) => {
-    // Retrieve cache for the given IP address
    return serverCache.get(ipAddress);
 };
 
@@ -84,12 +83,37 @@ const callVendor2 = async (req, res, next) => {
     
 }
 
+// Test Vendor
+const callVendor3 = async (req, res, next) => {
+
+    res.status(200).json({
+        Vendor: VENDOR.TEST
+    });
+}
+
+const callVendor = (req, res, next, vendor) => {
+    switch (vendor) {
+        case 'vendor1':
+            callVendor1(req, res, next);
+            break;
+        case 'vendor2':
+            callVendor2(req, res, next);
+            break;
+        case 'vendor3':
+            callVendor3(req, res, next);
+            break;
+        // We can add cases for other vendors as needed and also update the RATE_LIMITTER_CONSTANTS & VENDORin constants file
+        default:
+            res.status(400).send('Invalid vendor');
+    }
+};
+
 const callCache = (req, res, next) => {
     const ipAddress = req.query.ip;
-    console.log("*** Reply from Cache")
+    console.log("*** Reply from Cache ***")
     serverCache.get(ipAddress)
     res.status(200).json(serverCache.get(ipAddress));
 }
 
 
-module.exports = {  callVendor1, callVendor2, callCache, getCache, errorMessage };
+module.exports = {  callVendor, callCache, getCache, errorMessage };
