@@ -1,8 +1,12 @@
 # Simple Express Node API Gateway
 
-This repository contains a simple Express Node API Gateway that acts as a mediator between clients and multiple microservices. It provides a basic structure for routing requests to different services based on the endpoint.
+This repository contains a simple Express Node API Gateway that acts as a mediator between clients and multiple microservices. It provides a basic structure for routing requests to different services based on the endpoint. Additionally, it incorporates caching mechanisms to reduce load times and improve response efficiency, along with a configurable rate limiting feature (custom implementation) to manage incoming requests effectively and prevent abuse.
 
 ## Installation
+
+### Prerequisites
+- Node.js
+- npm (usually comes with Node.js)
 
 ### Follow these steps to get started:
 
